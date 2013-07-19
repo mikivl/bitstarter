@@ -55,6 +55,18 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return out;
 };
 
+var buildfn = function(checks) {
+    var response2console = function(result, response) {
+        if (result instanceof Error) {
+            console.error('Error: ' + util.format(response.message));
+        } else {
+            fs.writeFileSync(filename, result);
+            checkHtmlFile(filename, checks);
+        }
+    };
+    return response2console;
+};
+
 var clone = function(fn) {
     // Workaround for commander.js issue.
     // http://stackoverflow.com/a/6772648
@@ -65,10 +77,21 @@ if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+        .option('-u, --url <url>', 'Command line URL')
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+        
+    if(program.file){
+	    var checkJson = checkHtmlFile(program.file, program.checks);
+	    var outJson = JSON.stringify(checkJson, null, 4);
+	    console.log(outJson);
+	}
+	if(program.url){
+	    var response2console = buildfn(checks.js);
+	    rest.get(theurl).on('complete', response2console);
+	}    
+    // var checkJson = checkHtmlFile(program.file, program.checks);
+    // var outJson = JSON.stringify(checkJson, null, 4);
+    // console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
