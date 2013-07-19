@@ -86,8 +86,13 @@ if(require.main == module) {
 	    console.log(outJson);
 	}
 	if(program.url){
-	    var response2console = buildfn(checks.js);
-	    rest.get(theurl).on('complete', response2console);
+	    // var response2console = buildfn(checks.js);
+	    // rest.get(theurl).on('complete', response2console);
+	    rest.get(program.url).on('complete', function(result) {
+            if (result instanceof Error) {
+                sys.puts('Error:' + result.message);
+                this.retry(5000); // try again after 5 sec
+            }
 	}    
     // var checkJson = checkHtmlFile(program.file, program.checks);
     // var outJson = JSON.stringify(checkJson, null, 4);
